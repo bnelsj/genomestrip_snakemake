@@ -1,0 +1,13 @@
+{
+	"BAM_LIST": "test.bamfiles.list",
+	"REFERENCE": "hg19",
+	"GENSTRIP_PARAMETERS": "genstrip_parameters.txt",
+	"METADATA_DIR": "gs_md",
+	"LOG_DIR": "genstrip_log",
+	"REF_INFO": {
+		"hg19": {
+			"REF_DIR": "/net/eichler/vol2/eee_shared/assemblies/hg19/genomestrip_metadata/Homo_sapiens_assembly19",
+            "REF_PREFIX": "Homo_sapiens_assembly19"
+		}
+	}
+}
