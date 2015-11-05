@@ -46,6 +46,7 @@ rule genstrip_preprocess:
                 "-bamFilesAreDisjoint false "
                 "-jobRunner Drmaa "
                 "-gatkJobRunner Drmaa "
+                "-jobQueue all.q "
                 "-jobNative \"-l mfree=8G\" "
                 "-jobNative \"-q all.q\" "
                 "-jobNative \"-V -cwd\" "
