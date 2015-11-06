@@ -93,7 +93,7 @@ rule genstrip_del_discovery:
 
 rule genstrip_cnv_discovery:
     input: BAM_LIST, "GS_PREPROCESS_FINISHED"
-    output: "GS_CNV_DISCOVERY_FINISHED"
+    output: "results/gs_cnv.genotypes.vcf.gz"
     params: sge_opts = "-l mfree=8G -N gs_cnv_discovery"
     run:
         cmd = """java -Xmx4g -cp $classpath \
