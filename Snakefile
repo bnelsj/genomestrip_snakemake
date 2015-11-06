@@ -9,6 +9,7 @@ if config == {}:
 
 BAM_LIST = config["BAM_LIST"]
 REFERENCE = config["REFERENCE"]
+GENDER_MAP = config["GENDER_MAP"]
 GENSTRIP_PARAMETERS = config["GENSTRIP_PARAMETERS"]
 METADATA_DIR = config["METADATA_DIR"]
 LOG_DIR = config["LOG_DIR"]
@@ -28,7 +29,7 @@ rule all:
 rule genstrip_genotyper:
     input: VCF_FILE, BAM_LIST
     output: "gs_genotypes.vcf"
-    params: sge_opts = "-l mfree=8G -N gs_del_discovery"
+    params: sge_opts = "-l mfree=8G -N gs_genotyper"
     run:
         cmd = """java -Xmx4g -cp $classpath \
                 org.broadinstitute.gatk.queue.QCommandLine \
@@ -76,7 +77,7 @@ rule genstrip_del_discovery:
                 -O {output} \
                 -minimumSize 100 \
                 -maximumSize 100000 \
-                -runDirectory {SNAKEMAKE_DIR} \
+                -runDirectory {SNAKEMAKE_DIR}/gs_del_data \
                 -jobLogDir gs_del_discovery_log \
                 -jobRunner Drmaa \
                 -gatkJobRunner Drmaa \

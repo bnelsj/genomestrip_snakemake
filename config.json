@@ -1,6 +1,7 @@
 {
 	"BAM_LIST": "test.bamfiles.list",
 	"REFERENCE": "hg19",
+    "GENDER_MAP": "gendermap.txt",
 	"GENSTRIP_PARAMETERS": "genstrip_parameters.txt",
 	"METADATA_DIR": "gs_md",
 	"LOG_DIR": "genstrip_log",
