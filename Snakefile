@@ -51,9 +51,8 @@ rule genstrip_genotyper:
                 -jobNative "-q all.q" \
                 -jobNative " -V -cwd" \
                 -jobNative \"-w n\" \
-                -jobNative \"-l L3cache=30M\" \
                 -md gs_md \
-                -bamFilesAreDisjoint false \
+                -bamFilesAreDisjoint true \
                 -parallelJobs 50 \
                 -run"""
         print(cmd)
@@ -85,9 +84,8 @@ rule genstrip_del_discovery:
                 -jobNative "-q all.q" \
                 -jobNative " -V -cwd" \
                 -jobNative \"-w n\" \
-                -jobNative \"-l L3cache=30M\" \
                 -md gs_md \
-                -bamFilesAreDisjoint false \
+                -bamFilesAreDisjoint true \
                 -run"""
         print(cmd)
         shell(cmd)
@@ -121,7 +119,6 @@ rule genstrip_cnv_discovery:
                 -jobNative "-V -cwd" \
                 -jobNative "-q all.q" \
                 -jobNative \"-w n\" \
-                -jobNative \"-l L3cache=30M\" \
                 -run"""
 
         print(cmd)
@@ -146,7 +143,7 @@ rule genstrip_preprocess:
                 -I {input} \
                 -jobLogDir gs_preprocess_log \
                 -md gs_md \
-                -bamFilesAreDisjoint false \
+                -bamFilesAreDisjoint true \
                 -jobRunner Drmaa \
                 -gatkJobRunner Drmaa \
                 -jobQueue all.q \
@@ -154,7 +151,6 @@ rule genstrip_preprocess:
                 -jobNative \"-q all.q\" \
                 -jobNative \"-V -cwd\" \
                 -jobNative \"-w n\" \
-                -jobNative \"-l L3cache=30M\" \
                 -run """
 
         print(cmd)
