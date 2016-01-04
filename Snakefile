@@ -1,4 +1,5 @@
 import os
+import pysam
 
 SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 
@@ -127,7 +128,7 @@ rule genstrip_cnv_discovery:
 
 
 rule genstrip_preprocess:
-    input: BAM_LIST
+    input: BAM_LIST, "SAMPLES_PASS"
     output: "GS_PREPROCESS_FINISHED"
     params: sge_opts = "-l mfree=8G -N gs_preproc"
     run:
@@ -144,6 +145,7 @@ rule genstrip_preprocess:
                 -jobLogDir gs_preprocess_log \
                 -md gs_md \
                 -bamFilesAreDisjoint true \
+                -reduceInsertSizeDistributions true \
                 -jobRunner Drmaa \
                 -gatkJobRunner Drmaa \
                 -jobQueue all.q \
@@ -151,8 +153,34 @@ rule genstrip_preprocess:
                 -jobNative \"-q all.q\" \
                 -jobNative \"-V -cwd\" \
                 -jobNative \"-w n\" \
+                -jobNative \"-l L3cache=30M\" \
                 -run """
 
         print(cmd)
         shell(cmd)
         shell("touch {output}")
+
+rule check_LB_tag:
+    input: BAM_LIST
+    output: "SAMPLES_PASS"
+    params: sge_opts=""
+    run:
+        bams = []
+        with open(input[0], "r") as manifest:
+            for line in manifest:
+                bams.append(line.rstrip())
+        for file in bams:
+            samfile = pysam.AlignmentFile(file)
+            header_lines = samfile.text.split("\n")
+            read_group = None
+            for line in header_lines:
+                if line.startswith("@RG"):
+                    read_group = line.split("\t")
+            if read_group is None:
+                sys.exit("File %s missing @RG header line" % file)
+            tags = map(lambda x: x.split(":")[0], read_group)
+
+            for tag in ["ID", "SM", "LB"]:
+                if not tag in tags:
+                    sys.exit("File %s missing %s tag" % (file, tag))
+        shell("touch {output[0]}")
