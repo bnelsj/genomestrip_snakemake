@@ -25,10 +25,10 @@ if not os.path.exists("log"):
 localrules: all
 
 rule all:
-    input: "GS_PREPROCESS_FINISHED"
+    input: "GS_PREPROCESS_FINISHED", "gs_genotypes.vcf", "svdiscovery.dels.vcf"
 
 rule genstrip_genotyper:
-    input: VCF_FILE, BAM_LIST
+    input: VCF_FILE, BAM_LIST, "svdiscovery.dels.vcf"
     output: "gs_genotypes.vcf"
     params: sge_opts = "-l mfree=8G -N gs_genotyper"
     run:
@@ -40,7 +40,6 @@ rule genstrip_genotyper:
                 -gatk $SV_DIR/lib/gatk/GenomeAnalysisTK.jar \
                 -configFile {SNAKEMAKE_DIR}/{GENSTRIP_PARAMETERS} \
                 -R {REF_DIR}/{REF_PREFIX}.fasta \
-                -genderMapFile {GENDER_MAP} \
                 -vcf {input[0]} \
                 -I {input[1]} \
                 -O {output} \
@@ -60,7 +59,7 @@ rule genstrip_genotyper:
         shell(cmd)
 
 rule genstrip_del_discovery:
-    input: BAM_LIST, "GS_CNV_DISCOVERY_FINISHED"
+    input: BAM_LIST, "results/gs_cnv.genotypes.vcf.gz"
     output: "svdiscovery.dels.vcf"
     params: sge_opts = "-l mfree=8G -N gs_del_discovery"
     run:
@@ -86,6 +85,7 @@ rule genstrip_del_discovery:
                 -jobNative " -V -cwd" \
                 -jobNative \"-w n\" \
                 -md gs_md \
+                -rmd {REF_DIR} \
                 -bamFilesAreDisjoint true \
                 -run"""
         print(cmd)
@@ -106,7 +106,7 @@ rule genstrip_cnv_discovery:
                 -R {REF_DIR}/{REF_PREFIX}.fasta \
                 -I {input[0]} \
                 -md gs_md \
-                -runDirectory {SNAKEMAKE_DIR} \
+                -runDirectory {SNAKEMAKE_DIR}/cnv_discovery \
                 -jobLogDir gs_cnv_discovery_log \
                 -intervalList {REF_DIR}/{REF_PREFIX}.interval.list \
                 -tilingWindowSize 1000 \
@@ -141,7 +141,7 @@ rule genstrip_preprocess:
                 -configFile {SNAKEMAKE_DIR}/{GENSTRIP_PARAMETERS} \
                 -R {REF_DIR}/{REF_PREFIX}.fasta \
                 -ploidyMapFile {REF_DIR}/{REF_PREFIX}.ploidymap.txt \
-                -I {input} \
+                -I {input[0]} \
                 -jobLogDir gs_preprocess_log \
                 -md gs_md \
                 -bamFilesAreDisjoint true \
