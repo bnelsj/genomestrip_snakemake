@@ -17,20 +17,24 @@ LOG_DIR = config["LOG_DIR"]
 REF_DIR = config["REF_INFO"][REFERENCE]["REF_DIR"]
 REF_PREFIX = config["REF_INFO"][REFERENCE]["REF_PREFIX"]
 
-VCF_FILE = "results/gs_cnv.genotypes.vcf.gz"
+VCF_FILE = config["VCF_FILE"]
+VCF_GT = config["VCF_GT"]
 
 if not os.path.exists("log"):
     os.makedirs("log")
 
+VCF_FILES = {"del": "del_discovery/svdiscovery.dels.vcf", "cnv": "cnv_discovery/results/gs_cnv.genotypes.vcf.gz", "other": VCF_FILE}
+
 localrules: all
 
 rule all:
-    input: "GS_PREPROCESS_FINISHED", "gs_genotypes.vcf", "svdiscovery.dels.vcf"
+    input: expand("gs_{vcf}.gt.vcf", vcf = VCF_GT)
 
 rule genstrip_genotyper:
-    input: VCF_FILE, BAM_LIST, "svdiscovery.dels.vcf"
-    output: "gs_genotypes.vcf"
-    params: sge_opts = "-l mfree=8G -N gs_genotyper"
+    input: lambda wildcards: VCF_FILES[wildcards.vcf], 
+           BAM_LIST
+    output: "gs_{vcf}.gt.vcf"
+    params: sge_opts = "-l mfree=8G -N gs_genotyper", type = "{vcf}"
     run:
         cmd = """java -Xmx4g -cp $classpath \
                 org.broadinstitute.gatk.queue.QCommandLine \
@@ -43,7 +47,7 @@ rule genstrip_genotyper:
                 -vcf {input[0]} \
                 -I {input[1]} \
                 -O {output} \
-                -runDirectory {SNAKEMAKE_DIR} \
+                -runDirectory {SNAKEMAKE_DIR}/gt_{params.type} \
                 -jobLogDir gs_genotyper_log \
                 -jobRunner Drmaa \
                 -gatkJobRunner Drmaa \
@@ -59,8 +63,8 @@ rule genstrip_genotyper:
         shell(cmd)
 
 rule genstrip_del_discovery:
-    input: BAM_LIST, "results/gs_cnv.genotypes.vcf.gz"
-    output: "svdiscovery.dels.vcf"
+    input: BAM_LIST, "cnv_discovery/results/gs_cnv.genotypes.vcf.gz"
+    output: "del_discovery/svdiscovery.dels.vcf"
     params: sge_opts = "-l mfree=8G -N gs_del_discovery"
     run:
         cmd = """java -Xmx4g -cp $classpath \
@@ -76,8 +80,8 @@ rule genstrip_del_discovery:
                 -O {output} \
                 -minimumSize 100 \
                 -maximumSize 100000 \
-                -runDirectory {SNAKEMAKE_DIR}/gs_del_data \
-                -jobLogDir gs_del_discovery_log \
+                -runDirectory {SNAKEMAKE_DIR}/del_discovery \
+                -jobLogDir del_discovery_log \
                 -jobRunner Drmaa \
                 -gatkJobRunner Drmaa \
                 -jobNative "-l mfree=8G" \
@@ -93,7 +97,7 @@ rule genstrip_del_discovery:
 
 rule genstrip_cnv_discovery:
     input: BAM_LIST, "GS_PREPROCESS_FINISHED"
-    output: "results/gs_cnv.genotypes.vcf.gz"
+    output: "cnv_discovery/results/gs_cnv.genotypes.vcf.gz"
     params: sge_opts = "-l mfree=8G -N gs_cnv_discovery"
     run:
         cmd = """java -Xmx4g -cp $classpath \

@@ -1,5 +1,7 @@
 {
-	"BAM_LIST": "test.bamfiles.list",
+    "VCF_FILE": "vcf_to_genotype.vcf",
+    "VCF_GT": ["cnv", "del"],
+	"BAM_LIST": "hgdp.reheader.rerun.list",
 	"REFERENCE": "hg19",
     "GENDER_MAP": "gendermap.txt",
 	"GENSTRIP_PARAMETERS": "genstrip_parameters.txt",
